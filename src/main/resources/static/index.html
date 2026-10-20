@@ -1,1 +1,53 @@
-
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام مبيعات وصول</title>
+<style>
+body{font-family:system-ui;background:#f5f5f5;padding:20px}
+.card{background:white;padding:20px;border-radius:12px;box-shadow:0 2px 8px #0001;margin-bottom:20px}
+input,button{padding:10px;margin:5px;border-radius:8px;border:1px solid #ddd}
+button{background:#111;color:white;cursor:pointer}
+table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid #eee;text-align:right}
+</style>
+</head>
+<body>
+<h2>نظام مبيعات وصول</h2>
+<div class="card">
+<h3>إضافة منتج</h3>
+<input id="name" placeholder="اسم المنتج">
+<input id="price" type="number" placeholder="السعر">
+<input id="qty" type="number" placeholder="الكمية">
+<button onclick="addProduct()">إضافة</button>
+</div>
+<div class="card">
+<h3>المنتجات</h3>
+<table id="table"><thead><tr><th>الاسم</th><th>السعر</th><th>الكمية</th><th>بيع</th><th>حذف</th></tr></thead><tbody></tbody></table>
+</div>
+<script>
+const API='/api/products';
+async function load(){
+ let res=await fetch(API);
+ let data=await res.json();
+ let tbody=document.querySelector('#table tbody');
+ tbody.innerHTML='';
+ data.forEach(p=>{
+  tbody.innerHTML+=`<tr><td>${p.name}</td><td>${p.price}</td><td>${p.quantity}</td><td><input id="sell-${p.id}" type="number" value="1" style="width:60px"><button onclick="sell(${p.id})">بيع</button></td><td><button onclick="del(${p.id})">x</button></td></tr>`;
+ });
+}
+async function addProduct(){
+ let p={name:name.value, price:parseFloat(price.value), quantity:parseInt(qty.value)};
+ await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+ name.value='';price.value='';qty.value='';load();
+}
+async function sell(id){
+ let q=document.getElementById('sell-'+id).value;
+ let res=await fetch(API+'/'+id+'/sell?qty='+q,{method:'POST'});
+ alert(await res.text());load();
+}
+async function del(id){await fetch(API+'/'+id,{method:'DELETE'});load();}
+load();
+</script>
+</body>
+  </html>
